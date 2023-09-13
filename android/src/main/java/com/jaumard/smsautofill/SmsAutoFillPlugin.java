@@ -1,5 +1,7 @@
 package com.jaumard.smsautofill;
 
+import static android.content.Context.RECEIVER_EXPORTED;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -29,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import io.flutter.embedding.android.FlutterView;
 import io.flutter.embedding.engine.FlutterEngine;
@@ -109,10 +112,23 @@ public class SmsAutoFillPlugin implements FlutterPlugin, ActivityAware, MethodCa
                     @Override
                     public void onSuccess(Void aVoid) {
                         unregisterReceiver();// unregister existing receiver
-                        broadcastReceiver = new SmsBroadcastReceiver(new WeakReference<>(SmsAutoFillPlugin.this),
-                                smsCodeRegexPattern);
-                        activity.registerReceiver(broadcastReceiver,
-                                new IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION));
+                        broadcastReceiver = new SmsBroadcastReceiver(
+                                new WeakReference<>(SmsAutoFillPlugin.this),
+                                smsCodeRegexPattern
+                        );
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            activity.registerReceiver(
+                                    broadcastReceiver,
+                                    new IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION),
+                                    Context.RECEIVER_NOT_EXPORTED
+                            );
+                        } else {
+                            activity.registerReceiver(
+                                    broadcastReceiver,
+                                    new IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
+                            );
+                        }
                         result.success(null);
                     }
                 });
