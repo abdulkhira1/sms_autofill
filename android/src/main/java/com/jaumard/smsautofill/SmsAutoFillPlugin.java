@@ -117,17 +117,11 @@ public class SmsAutoFillPlugin implements FlutterPlugin, ActivityAware, MethodCa
                                 smsCodeRegexPattern
                         );
 
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            activity.registerReceiver(
-                                    broadcastReceiver,
-                                    new IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION),
-                                    Context.RECEIVER_NOT_EXPORTED
-                            );
+                        IntentFilter filter = new IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION);
+                        if (Build.VERSION.SDK_INT >= 34 && activity.getApplicationInfo().targetSdkVersion >= 34) {
+                            activity.registerReceiver(broadcastReceiver, filter, Context.RECEIVER_EXPORTED);
                         } else {
-                            activity.registerReceiver(
-                                    broadcastReceiver,
-                                    new IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
-                            );
+                            activity.registerReceiver(broadcastReceiver, filter);
                         }
                         result.success(null);
                     }
